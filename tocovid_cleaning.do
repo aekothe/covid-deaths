@@ -11,33 +11,31 @@ cd "/Users/annkothe/Documents/GitHub/covid deaths"
 
 import delimited "COVID19cases.csv", clear
 
-//renaming variables
+// renaming variables
 gen id = assigned_id
 gen neighbourhood = neighbourhoodname
 gen date = reporteddate
 
 keep id date agegroup outbreakassociated neighbourhood classification outcome fsa
 
-* filter by fatalities.
-
+// filter by fatalities.
 drop if outcome != "FATAL" 
 
-*
-gen deaths = 1
+// calculating deaths
+gen x = 1
 
-collapse (firstnm) outbreakassociated agegroup fsa classification outcome (sum) deaths, by(date neighbourhood)
+egen ndeaths = sum(x), by (date neighbourhood)
 
-*make a number of deaths in a day column
-
-egen dailytotal = sum(deaths), by (date)
+*deaths per day
+egen dailytotal = sum(ndeaths), by (date)
 
 *column of total number of deaths in the dataset
-foreach v of dailytotal {
-	gen x = sum(deaths)
-}
+sort date neighbourhood
 
-foreach i of numlist 1952(4)2012 {
- logit vote strg weak lean [pw=w] if year==`i'
-}
+gen grosstotal = dailytotal + (_n - 1)
 
+*collapse to organize by neighborhood and date
+collapse (firstnm) outbreakassociated agegroup fsa classification outcome dailytotal gross ndeaths, by(date neighbourhood)
+
+// save
 save "cleanedCOVID19fatalities.dta"

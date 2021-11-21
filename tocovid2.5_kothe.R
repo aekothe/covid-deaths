@@ -47,16 +47,19 @@ a <- ggplot(to, mapping = aes(x = long, y = lat,
 
 b <- a + geom_polygon(data = cases, 
                       aes(long, lat, group = group, 
-                          fill = deaths)) +
+                          fill = ndeaths)) +
           scale_fill_viridis_c(option = "magma", 
                                direction = -1) +
           theme(legend.title = element_blank()) +
           labs(caption = "@AnnKothe \nsource: Open TO"); b
 
 c <- b + transition_manual(frames = date) +
-        labs(title = "COVID-19 fatalities on {current_frame}") +
-        labs(subtitle = "Total Deaths: {cases$total}")  +
-        ease_aes("cubic-in-out"); c
+         labs(title = "COVID-19 fatalities on {current_frame}"); c
+
+d <- b + transition_states(grosstotal) +
+         labs(subtitle = "Total Deaths: {closest_state}"); d
+
+
 
 animate(c, height = 800, width = 800, fps = 1)
 anim_save("covid.gif")
