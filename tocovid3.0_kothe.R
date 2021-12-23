@@ -38,31 +38,33 @@ cases <-left_join(id, covid, by = "neighbourhood")
 
 #merge columns
 cases$date <- paste0("COVID-19 fatalities on ", cases$date)
-cases$grosstotal <- paste0("Total Deaths: ", cases$grosstotal)
-cols <- c("date", "grosstotal")
+cases$gross <- paste0("Total Deaths: ", cases$gross)
+cols <- c("date", "gross")
 
 cases$data <- do.call(paste, c(cases[cols], sep=" \n"))
+
+cases <- na.omit(cases)
 
 #gif
 a <- ggplot(to, mapping = aes(x = long, y = lat, 
                               group = group)) +
-  geom_polygon(color = alpha("black", 1.5), 
-               size = 0.2, fill = "white") +
-  coord_map(projection = "albers",  lat0 = 49, 
-            lat1 = 75) +
-  theme_map(); a
+      geom_polygon(color = alpha("black", 1.5), 
+                   size = 0.2, fill = "white") +
+      coord_map(projection = "albers",  lat0 = 49, 
+                lat1 = 75) +
+      theme_map(); a
 
 b <- a + geom_polygon(data = cases, 
                       aes(long, lat, group = group, 
                           fill = ndeaths)) +
-  scale_fill_viridis_c(option = "magma", 
-                       direction = -1) +
-  theme(legend.title = element_blank()) +
-  labs(caption = "@AnnKothe \nsource: Open TO"); b
+      scale_fill_viridis_c(option = "magma", 
+                           direction = -1) +
+      theme(legend.title = element_blank()) +
+      labs(caption = "@AnnKothe \nsource: Open TO"); b
 
 c <- b + transition_manual(frames = data) +
-  labs(title = "{current_frame}") +
-  ease_aes("cubic-in-out"); c
+      labs(title = "{current_frame}") +
+      ease_aes("cubic-in-out"); c
 
 animate(c, height = 800, width = 800, fps = 1)
 anim_save("covid122221.gif")
